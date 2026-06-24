@@ -1,0 +1,125 @@
+q := 2; //finite field size
+num_test := 100; //number of tests for each value of k
+Fq := GF(q);
+//file used for writing the results
+f:=Open("output.txt","w");
+Write(f, "k, Our, BuiltIn\n");
+
+function sample_perm_order(k)
+	//Samples permutation if length n = 2*k and with order k. This is done by sampling
+    	//two disjoint cycles of length k. The cycles are joined to create a string, then the string is used to create a permutation
+    	//of length n = 2*k
+	S2k := Sym(2*k);
+	//generate a permutation of S_{2*k} and write it in sequence form
+	P := Eltseq(Random(S2k)); 
+	cycles:=[];
+	for i in [1..k-1] do
+		cycles[P[i]] := P[i+1];
+	end for;
+	cycles[P[k]]:=P[1];
+
+	for i in [1..k-1] do
+		cycles[P[k+i]]:=P[k+i+1];
+	end for;
+	cycles[P[2*k]]:=P[k+1];
+
+
+	perm:=S2k!cycles;
+return perm, PermutationMatrix(Integers(),perm);
+end function;
+
+
+function gen_code(Fq, n, k)
+	//Generate random code whose automorphism group contains P (and its powers).
+	//P is sampled as a permutation of length n and order k
+	ok := 0;
+	while (ok eq 0) do
+		cycles, P := sample_perm_order(k);
+		P:=ChangeRing(P, Fq);
+		G := ZeroMatrix(Fq, k, n);
+		a := Vector(Fq, [Random(Fq) : i in [1..n]]);
+		G[1]:=a;
+		for i in [2..k] do
+            		a := a*P;
+			G[i]:=a;
+		end for;
+		if (Rank(G) eq k) then
+              		ok := 1;
+		end if;
+	end while;
+
+	S := RandomMatrix(Fq,k,k);
+	while (Rank(S) lt k) do
+		S := RandomMatrix(Fq,k,k);
+	end while;
+	return cycles, P, S*G;
+end function;
+
+
+for k in [20..60] do
+k;
+	n := 2*k;
+	
+	our := 0; //average time for our solver
+	magma_built_in := 0; //average time for built-in function
+
+
+	num := 0; //number of tested codes
+
+   	while (num lt num_test) do
+		//generate code
+        	cycles, P, G := gen_code(Fq, n, k);
+        	h := k-Rank(G*Transpose(G)); //hull dimension
+
+        	if (h eq 0) then
+			num:=num+1;
+		
+			//our reduction
+			t1:= Cputime();
+			A :=Transpose(G)*(G*Transpose(G))^-1*G; //adjacency matrix
+			//directed graph geneation
+			edges:=[];
+			weights:=[];
+			for i in [1..n] do
+				for j in [1..n] do
+					a:= Integers()!A[i][j];
+					if a ne 0 then
+						Append(~edges,[i,j]);
+						Append(~weights,a);
+					end if;
+				end for;
+			end for;
+			graph := Digraph< n | edges >;
+			auto_group :=  AutomorphismGroup(graph); 
+			our := our + Cputime(t1);
+
+			//now, magma built-in function
+			C := LinearCode(G);
+			t2 := Cputime();
+			gens := PermutationGroup(C);			
+			magma_built_in := magma_built_in + Cputime(t2);
+
+			//validity check 
+			if gens ne auto_group then
+				print "PROBLEM";
+			end if;
+		end if;
+	end while;
+
+/*
+print "Avg times: k =", k,
+      ": Our =", RealField()!(our/num_test),
+      ", Built-in =", RealField()!(magma_built_in/num_test);
+
+*/
+
+
+
+	
+
+fprintf f, "%o, %o, %o\n", k, RealField()!(our/num_test), RealField()!(magma_built_in/num_test);
+
+end for;
+
+delete f;
+
