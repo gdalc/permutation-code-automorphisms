@@ -14,6 +14,9 @@ test_type = "OUR" #test only our algorithm
 #test_type = "BOTH" #test both algorithms
 
 #Prepare files for output
+output_dir = "Results"
+os.makedirs(output_dir, exist_ok=True)
+
 if (test_type == "OUR")|(test_type == "BOTH"):
     file_name_OUR = "Results/q"+str(q)+"_h0_cyclic_OUR.csv"
     #Prepare csv file
