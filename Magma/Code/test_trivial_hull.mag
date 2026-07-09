@@ -2,7 +2,7 @@ q := 2; //finite field size
 num_test := 100; //number of tests for each value of k
 Fq := GF(q);
 //file used for writing the results
-f:=Open("output.txt","w");
+f:=Open("file_path","w");
 Write(f, "k, Our, BuiltIn\n");
 
 function sample_perm_order(k)
@@ -56,68 +56,45 @@ function gen_code(Fq, n, k)
 end function;
 
 
-for k in [20..60] do
+for k in [30..70] do
 k;
 	n := 2*k;
 	
 	our := 0; //average time for our solver
-	magma_built_in := 0; //average time for built-in function
+	magma_builtin := 0; //average time for built-in function
 
-
-	num := 0; //number of tested codes
-
-   	while (num lt num_test) do
+   	for test in [1.. num_test] do
 		//generate code
-        	cycles, P, G := gen_code(Fq, n, k);
-        	h := k-Rank(G*Transpose(G)); //hull dimension
-
-        	if (h eq 0) then
-			num:=num+1;
+			h:=1;
+			while (h ne 0) do
+        		cycles, P, G := gen_code(Fq, n, k);
+        		h := k-Rank(G*Transpose(G)); //hull dimension
+			end while;
 		
 			//our reduction
 			t1:= Cputime();
 			A :=Transpose(G)*(G*Transpose(G))^-1*G; //adjacency matrix
-			//directed graph geneation
-			edges:=[];
-			weights:=[];
-			for i in [1..n] do
-				for j in [1..n] do
-					a:= Integers()!A[i][j];
-					if a ne 0 then
-						Append(~edges,[i,j]);
-						Append(~weights,a);
-					end if;
-				end for;
-			end for;
-			graph := Digraph< n | edges >;
+			//directed graph geneation;
+			graph := Digraph<n|MatrixRing(Integers(), n)!A>;
 			auto_group :=  AutomorphismGroup(graph); 
-			our := our + Cputime(t1);
-
+			our_t:=Cputime(t1);
+			our := our + our_t;
+			
 			//now, magma built-in function
 			C := LinearCode(G);
 			t2 := Cputime();
-			gens := PermutationGroup(C);			
-			magma_built_in := magma_built_in + Cputime(t2);
+			gens := PermutationGroup(C);	
+			magma :=Cputime(t2);		
+			magma_builtin := magma_builtin + magma;
 
 			//validity check 
 			if gens ne auto_group then
 				print "PROBLEM";
 			end if;
-		end if;
-	end while;
+			
+	end for;
 
-/*
-print "Avg times: k =", k,
-      ": Our =", RealField()!(our/num_test),
-      ", Built-in =", RealField()!(magma_built_in/num_test);
-
-*/
-
-
-
-	
-
-fprintf f, "%o, %o, %o\n", k, RealField()!(our/num_test), RealField()!(magma_built_in/num_test);
+fprintf f, "%o, %o, %o\n", k, RealField()!(our/num_test) RealField()!(magma_builtin/num_test);
 
 end for;
 
