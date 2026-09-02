@@ -91,40 +91,18 @@ for k in range(3,100):
 
         if h == 1:
 
-            #Recover the hull vector x = c*G, where c spans the left kernel of G*G^T
-            ker = GGt.left_kernel()
-            c = ker.basis()[0]
-            x = c*G
-
-            #Theorem 4.5: C is GI-reducible iff (x,1) != 0. This eligibility
-            #check (like the h==1 check above) is treated as instance
-            #selection - common "test harness" overhead needed to pick a
-            #comparable set of codes for OUR vs BUILTIN - and is therefore
-            #NOT included in the timed reduction below, consistent with how
-            #the h==0 filter is untimed in test_trivial_hull.sage.
-            if sum(x) == 0:
+            if is_reducible(G, GGt):
                 continue
 
             num_codes += 1
 
             if (test_type == "OUR")|(test_type == "BOTH"):
-                #Our reduction - timing now starts BEFORE finding a,b, since
-                #for a random code this search is a genuine part of running
-                #the algorithm (Algorithm 1, Steps 1-2), not something we can
-                #precompute from known structure as in test_hull_one.sage.
+                #Our reduction - timing now includes finding a,b (the search
+                #for the structure matrix M), not just the graph solve
                 start = time.time()
 
-                b = find_b(Fq, n) #closed-form choice of b (a = 1 fixed)
-                J = matrix(Fq, n, n, lambda i,j: 1)
-                M = identity_matrix(Fq, n) + b*J
-
-                GMGt = G*M*G.transpose() #guaranteed nonsingular by Theorem 4.5
-                A = M*G.transpose()*(GMGt)^-1*G #generalized orthogonal projector Pi_{C,M}
-
-                #Pi_{C,M} is generally not symmetric (unless M = I), so it is
-                #the weighted adjacency matrix of a directed graph (Section 6)
-                graph_A = DiGraph(A.change_ring(ZZ), weighted=True)
-                auto_group = graph_A.automorphism_group(edge_labels=True) #solver for automorphisms of digraph
+                auto_group = find_code_aut_onedim_hull(G, q, n)
+                
                 end = time.time()
 
                 our += end-start

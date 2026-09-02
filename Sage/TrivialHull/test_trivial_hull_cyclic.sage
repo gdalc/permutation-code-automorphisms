@@ -64,9 +64,8 @@ for k in range(3,100):
                 #Our reduction
                 start = time.time()
 
-                A = G.transpose()*(G*G.transpose())^-1*G #adjacency matrix
-                graph_A = Graph(A.change_ring(ZZ)) #graph
-                auto_group = graph_A.automorphism_group() #solver for automorphisms of graph
+                auto_group = find_code_aut_trivial_hull(G)
+
                 end = time.time()
 
                 our += end-start

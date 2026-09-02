@@ -9,23 +9,23 @@ q = 3 #finite field size
 num_test = 100 #number of tests for each value of k
 do_proof = False #set to True if you want to test each of the found automorphisms
 
-test_type = "OUR" #test only our algorithm
+#test_type = "OUR" #test only our algorithm
 #test_type = "BUILTIN" #test only builtin
-#test_type = "BOTH" #test both algorithms
+test_type = "BOTH" #test both algorithms
 
 #Prepare files for output
 output_dir = "Results"
 os.makedirs(output_dir, exist_ok=True)
 
 if (test_type == "OUR")|(test_type == "BOTH"):
-    file_name_OUR = "Results/q"+str(q)+"_h0_random_OUR.csv"
+    file_name_OUR = "Results/q"+str(q)+"_h0_cyclic_OUR.csv"
     #Prepare csv file
     with open(file_name_OUR, 'w', newline='') as outcsv:
         writer = csv.writer(outcsv)
         writer.writerow(["k", "Our"])
 
 if (test_type == "BUILTIN")|(test_type == "BOTH"):
-    file_name_BUILTIN = "Results/q"+str(q)+"_h0_random_BUILTIN.csv"
+    file_name_BUILTIN = "Results/q"+str(q)+"_h0_cyclic_BUILTIN.csv"
     #Prepare csv file
     with open(file_name_BUILTIN, 'w', newline='') as outcsv:
         writer = csv.writer(outcsv)
@@ -64,9 +64,8 @@ for k in range(3,100):
                 #Our reduction
                 start = time.time()
 
-                A = G.transpose()*(G*G.transpose())^-1*G #adjacency matrix
-                graph_A = Graph(A.change_ring(ZZ)) #graph
-                auto_group = graph_A.automorphism_group() #solver for automorphisms of graph
+                auto_group = find_code_aut_trivial_hull(G)
+                
                 end = time.time()
 
                 our += end-start

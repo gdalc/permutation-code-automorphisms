@@ -38,33 +38,6 @@ if (test_type == "BUILTIN")|(test_type == "BOTH"):
 Fq = GF(q)
 
 
-def find_b(Fq, n):
-    '''
-    Closed-form (non-bruteforce) choice of b in Fq^* such that
-    M = I + b*J is nondegenerate, i.e. det(M) = 1 + n*b != 0 (Remark 3.6, a=1).
-
-    By Theorem 4.5 / the proof's Schur-complement computation, for a code with
-    dim(Hull(C)) = 1 and hull vector x satisfying (x,1) != 0, *every* choice of
-    a != 0, b != 0 with a+n*b != 0 makes GMG^T nonsingular. So we do not search
-    over candidate b's by testing rank(G*M*G^T) (that would cost O(q) rank
-    computations); we only need to avoid the single value of b that makes M
-    itself degenerate, which is a single field-element check.
-    '''
-    n_Fq = Fq(n)
-
-    if n_Fq == 0:
-        #characteristic divides n: 1 + n*b = 1 for every b, so any nonzero b works
-        return Fq(1)
-
-    forbidden = -Fq(1)/n_Fq #the unique b with 1 + n*b = 0
-
-    for b in Fq:
-        if b != 0 and b != forbidden:
-            return b
-
-    return None #only happens if q <= 2 and forbidden coincides with the only nonzero element
-
-
 #For each value of k, sample code with automorphism group of size at least k.
 #Then, check if it has hull dimension exactly 1 with (x,1) != 0 (i.e. is
 #GI-reducible per Theorem 4.5 but not LCD) and, when this happens, compare
@@ -99,16 +72,7 @@ for k in range(3,100):
 
         if h == 1:
 
-            #Recover the hull vector x = c*G, where c spans the left kernel of G*G^T
-            #(Hull(C) = {c*G : c*G*G^T = 0}, see proof of Lemma 3.1)
-            ker = GGt.left_kernel()
-            c = ker.basis()[0]
-            x = c*G
-
-            #Theorem 4.5: C is GI-reducible iff (x,1) != 0. If (x,1) = 0, no
-            #M = aI+bJ makes C an M-LCD code, so we discard this sample and
-            #resample (mirrors "not GI-reducible" branch of Algorithm 1).
-            if sum(x) == 0:
+            if is_reducible(G, GGt):
                 continue
 
             num_codes += 1
@@ -118,18 +82,8 @@ for k in range(3,100):
                 #for the structure matrix M), not just the graph solve
                 start = time.time()
 
-                #Closed-form choice of structure matrix M = I + b*J (a = 1)
-                b = find_b(Fq, n)
-                J = matrix(Fq, n, n, lambda i,j: 1)
-                M = identity_matrix(Fq, n) + b*J
-
-                GMGt = G*M*G.transpose() #guaranteed nonsingular by Theorem 4.5
-                A = M*G.transpose()*(GMGt)^-1*G #generalized orthogonal projector Pi_{C,M}
-
-                #Pi_{C,M} is generally not symmetric (unless M = I), so it is
-                #the weighted adjacency matrix of a directed graph (Section 6)
-                graph_A = DiGraph(A.change_ring(ZZ), weighted=True)
-                auto_group = graph_A.automorphism_group(edge_labels=True) #solver for automorphisms of digraph
+                auto_group = find_code_aut_onedim_hull(G, q, n)
+                
                 end = time.time()
 
                 our += end-start
