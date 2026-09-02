@@ -17,8 +17,18 @@ def sample_perm_with_order(k):
 
     return cycles, Permutation(cycles).to_matrix()
 
+def gen_random_code(q, n, k):
+    '''
+    Purely random [n,k]_q code: no imposed automorphism structure at all
+    (unlike utils.sage's gen_code, which forces an order-k automorphism).
+    '''
+    Fq = GF(q)
+    G = random_matrix(Fq, k, n)
+    while rank(G) < k:
+        G = random_matrix(Fq, k, n)
+    return G
 
-def gen_code(Fq, n, k):
+def gen_code(q, n, k):
     '''
     Generate random code whose automorphism group contains P (and its powers).
     P is sampled as a permutation of length n and order k
@@ -27,6 +37,7 @@ def gen_code(Fq, n, k):
     This way, we obtain the k rows of the generator matrix
     We also check if the code rate is ok
     '''
+    Fq = GF(q)
     ok = 0
     while ok == 0:
 

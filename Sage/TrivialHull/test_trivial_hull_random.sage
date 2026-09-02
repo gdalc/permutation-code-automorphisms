@@ -1,4 +1,4 @@
-load('utils.sage')
+load('../utils.sage')
 import time
 import csv
 import re
@@ -18,14 +18,14 @@ output_dir = "Results"
 os.makedirs(output_dir, exist_ok=True)
 
 if (test_type == "OUR")|(test_type == "BOTH"):
-    file_name_OUR = "Results/q"+str(q)+"_h0_cyclic_OUR.csv"
+    file_name_OUR = "Results/q"+str(q)+"_h0_random_OUR.csv"
     #Prepare csv file
     with open(file_name_OUR, 'w', newline='') as outcsv:
         writer = csv.writer(outcsv)
         writer.writerow(["k", "Our"])
 
 if (test_type == "BUILTIN")|(test_type == "BOTH"):
-    file_name_BUILTIN = "Results/q"+str(q)+"_h0_cyclic_BUILTIN.csv"
+    file_name_BUILTIN = "Results/q"+str(q)+"_h0_random_BUILTIN.csv"
     #Prepare csv file
     with open(file_name_BUILTIN, 'w', newline='') as outcsv:
         writer = csv.writer(outcsv)
@@ -34,7 +34,7 @@ if (test_type == "BUILTIN")|(test_type == "BOTH"):
 
 Fq = GF(q)
 
-#For each value of k, sample code with automorphism group of size at least k.
+#For each value of k, sample a random code.
 #Then, check if it has trivial hull and, when this happens, compare Sage-built in function
 #with our reduction to the Automorphisms Graph Problem
 
@@ -52,7 +52,7 @@ for k in range(3,100):
     while num_codes < num_test:
 
         #Generate code
-        cycles, P, G = gen_code(Fq, n, k)
+        cycles, P, G = gen_random_code(q, n, k)
         h = k-rank(G*G.transpose()) #hull dimension
 
         errors = 0 #set to 1 if something bad happens

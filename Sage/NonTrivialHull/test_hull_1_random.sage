@@ -1,3 +1,4 @@
+load('../utils.sage')
 import time
 import csv
 import re
@@ -34,16 +35,6 @@ if (test_type == "BUILTIN")|(test_type == "BOTH"):
 
 Fq = GF(q)
 
-
-def gen_random_code(Fq, n, k):
-    '''
-    Purely random [n,k]_q code: no imposed automorphism structure at all
-    (unlike utils.sage's gen_code, which forces an order-k automorphism).
-    '''
-    G = random_matrix(Fq, k, n)
-    while rank(G) < k:
-        G = random_matrix(Fq, k, n)
-    return G
 
 
 def find_b(Fq, n):
@@ -92,7 +83,7 @@ for k in range(3,100):
         #          "- found",num_codes,"/",num_test,"valid hull-1 codes so far")
 
         #Generate a fully random code (no imposed automorphism structure)
-        G = gen_random_code(Fq, n, k)
+        G = gen_random_code(q, n, k)
         GGt = G*G.transpose()
         h = k-rank(GGt) #hull dimension (standard inner product)
 

@@ -1,4 +1,4 @@
-load('utils.sage')
+load('../utils.sage')
 import time
 import csv
 import re
@@ -91,7 +91,7 @@ for k in range(3,100):
                   "- found",num_codes,"/",num_test,"hull-1 codes so far")
 
         #Generate code
-        cycles, P, G = gen_code(Fq, n, k)
+        cycles, P, G = gen_code(q, n, k)
         GGt = G*G.transpose()
         h = k-rank(GGt) #hull dimension (standard inner product)
 
