@@ -9,9 +9,24 @@ q = 3 #finite field size
 num_test = 100 #number of tests for each value of k
 do_proof = False #set to True if you want to test each of the found automorphisms
 
+min_k = 3
+max_k = 100
+
+max_attempts_per_k = 20000 #safety cap on sampling attempts for each k
+
 test_type = "OUR" #test only our algorithm
 #test_type = "BUILTIN" #test only builtin
 #test_type = "BOTH" #test both algorithms
+
+print("Test for q = ", q)
+print("num_test = ", num_test)
+print("do_proof = ",do_proof)
+
+print("k from ",min_k, " to ", max_k-1)
+
+print("max_attempts_per_k = ",max_attempts_per_k)
+print("test_type = ",test_type)
+print("-------------------\n")
 
 #Prepare files for output
 output_dir = "Results"
@@ -38,7 +53,7 @@ Fq = GF(q)
 #Then, check if it has trivial hull and, when this happens, compare Sage-built in function
 #with our reduction to the Automorphisms Graph Problem
 
-for k in range(3,100):
+for k in range(min_k, max_k):
 
     n = 2*k
 

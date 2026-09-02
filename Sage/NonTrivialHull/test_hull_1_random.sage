@@ -5,9 +5,12 @@ import re
 
 #proof.all(False)
 
-q = 3 #finite field size
+q = 5 #finite field size (for this test q % 4 = 1)
 num_test = 100 #number of tests for each value of k
 do_proof = False #set to True if you want to test each of the found automorphisms
+
+min_k = 3
+max_k = 100
 
 max_attempts_per_k = 20000 #safety cap on sampling attempts for each k
 progress_every = 500 #print a progress line every this many attempts
@@ -15,6 +18,17 @@ progress_every = 500 #print a progress line every this many attempts
 #test_type = "OUR" #test only our algorithm
 #test_type = "BUILTIN" #test only builtin
 test_type = "BOTH" #test both algorithms
+
+print("Test for q = ", q)
+print("num_test = ", num_test)
+print("do_proof = ",do_proof)
+
+print("k from ",min_k, " to ", max_k-1)
+
+print("max_attempts_per_k = ",max_attempts_per_k)
+print("test_type = ",test_type)
+print("-------------------\n")
+
 
 #Prepare files for output
 output_dir = "Results"
@@ -37,32 +51,11 @@ Fq = GF(q)
 
 
 
-def find_b(Fq, n):
-    '''
-    Closed-form (non-bruteforce) choice of b in Fq^* such that
-    M = I + b*J is nondegenerate, i.e. det(M) = 1 + n*b != 0 (Remark 3.6, a=1).
-    Only the single degenerate value of b is excluded - no rank/determinant
-    search over candidate b's.
-    '''
-    n_Fq = Fq(n)
-
-    if n_Fq == 0:
-        return Fq(1)
-
-    forbidden = -Fq(1)/n_Fq
-
-    for b in Fq:
-        if b != 0 and b != forbidden:
-            return b
-
-    return None
-
-
 #For each value of k, sample a fully random [n,k]_q code (n = 2k, matching the
 #length scale used elsewhere). Keep only codes with dim(Hull(C)) = 1 and
 #(x,1) != 0 (i.e. GI-reducible per Theorem 4.5).
 
-for k in range(3,100):
+for k in range(min_k, max_k):
 
     n = 2*k
 
