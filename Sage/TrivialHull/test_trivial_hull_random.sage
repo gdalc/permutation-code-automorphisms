@@ -52,7 +52,7 @@ for k in range(3,100):
     while num_codes < num_test:
 
         #Generate code
-        cycles, P, G = gen_random_code(q, n, k)
+        G = gen_random_code(q, n, k)
         h = k-rank(G*G.transpose()) #hull dimension
 
         errors = 0 #set to 1 if something bad happens
