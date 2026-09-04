@@ -5,7 +5,7 @@ import re
 
 #proof.all(False)
 
-q = 5 #finite field size (for this test q % 4 = 1)
+q = 5 #finite field size
 num_test = 100 #number of tests for each value of k
 do_proof = False #set to True if you want to test each of the found automorphisms
 
